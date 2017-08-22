@@ -1,0 +1,234 @@
+<div class="container" style="width: 98%; margin-left:auto; margin-right:auto;">
+    <div style="width: 80%; margin-right:auto; margin-left:auto; padding-top: 5px; border-radius: 5px 5px;"
+         class="bg-success text-center row" ng-show="assignmentPosted">
+        <div class="col-md-11">
+            <h4>Report posted successfully !!</h4>
+        </div>
+        <div class="col-md-1">
+            <span ng-click="assignmentPosted = false" class="glyphicon glyphicon-remove"></span>
+        </div>
+    </div>
+    <div ng-if="!$state.is('report.profile') && !$state.is('report.userProfile') && !$state.is('report.sector') && currentUser"
+         style="padding:20px">
+        <button class="pull-right btn btn-primary btn-flat" ng-click="postAssignment = !postAssignment"> Report <i
+                ng-if="postAssignment" style="word-spacing: 20px;" class="fa fa-caret-down"></i><i
+                ng-if="!postAssignment" style="word-spacing: 20px;" class="fa fa-caret-up"></i></button>
+
+        <form name="statusForm" ng-submit="postStatus(status)" ng-show="postAssignment" encytype="multipart">
+            <h4>Report</h4>
+            <div class="form-group">
+                <select *ngFor="let user of users" ng-model="status.member">
+                    <option value="{{user.id}}">user.name
+                </select>
+                </select>
+            </div>
+            <div class="form-group has-feedback">
+                <input type="text" class="form-control" placeholder="title" ng-model="status.title">
+            </div>
+            <div class="form-group">
+                <textarea class="form-control" rows="3" placeholder="Description..."
+                          ng-model="status.description"></textarea>
+            </div>
+            <div class="form-group">
+                <input class="form-control" type="file" ng-model="status.file">
+            </div>
+            <div class="row">
+                <div class="col-md-4 col-sm-12 form-group has-feedback">
+                    <label>Sectors</label>
+                    <select ng-options="sector._id as sector.name for sector in sectors"
+                            ng-model="status.sector"></select>
+                </div>
+                <div class="col-md-4 col-sm-12 form-group has-feedback">
+                    <form action="/fileupload" class="dropzone">
+
+                    </form>
+                </div>
+
+                <div class="col-md-4 col-sm-12 form-group has-feedback">
+                    <input type="date" class="form-control" data-date-format="MM-DD-YYYY"
+                           placeholder="Submission Date MM/DD/YYYY" ng-model="selectedDate.starts_at">
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- /.col -->
+                <div class="col-xs-12">
+                    <button type="submit" class="pull-right btn btn-primary btn-flat">Post</button>
+                </div>
+                <!-- /.col -->
+            </div>
+        </form>
+    </div>
+
+    <div ng-if="!$state.is('report.profile') && !$state.is('report.userProfile') && !$state.is('report.sector')"
+         ng-repeat="news in newsfeed | orderBy: 'created':true | filter:searchPost" style="padding: 20px">
+        <div class="box-header with-border">
+            <div class="user-block">
+                <img class="img-circle" src="dist/img/avatar.png" alt="User Image">
+                <span class="username">
+                <a ui-sref="report.userProfile({userId: news.vacancy.user._id})">
+                    {{news.vacancy.user.name }}
+                </a>  
+                <i style="word-spacing: 20px;" class="fa fa-caret-right"></i>  
+                <span style="margin-left: 5px; margin-right: 5px;">{{news.vacancy.user.role | uppercase}}</span>
+                </span>
+                <span class="description">
+                posted in 
+                <a ng-click="getNewsfeedBySector(news.sector)">
+                    {{news.vacancy.sector | sectorFilter}}
+                </a> sector - {{news.vacancy.updated}}
+            </span>
+            </div>
+            <!-- /.user-block -->
+        </div>
+        <!-- /.box-header -->
+        <div class="box-body mx-auto">
+            <!-- post text -->
+            <h3>{{news.vacancy.title}}</h3>
+            <p class="text-justify">{{news.vacancy.description}}</p>
+
+            <!-- Social sharing buttons -->
+            <button type="button" class="btn btn-default btn-xs" ng-click="likePost(news._id, $index)"><i
+                    class="fa fa-thumbs-o-up"></i> Like
+            </button>
+            <button data-toggle="modal" data-target="#myModal" type="button" class="btn btn-default btn-xs" ><i
+                    class="fa fa-thumbs-o-up"></i> Upload
+            </button>
+            <span class="pull-right text-muted">{{news.likes.length | likesFilter}} - {{news.comments.length}} comments</span>
+        </div>
+        <!-- /.box-body -->
+        <div class="box-footer box-comments" ng-repeat="comment in news.comments">
+            <div class="box-comment">
+                <!-- User image -->
+                <img class="img-circle img-sm" src="dist/img/avatar.png" alt="User Image">
+
+                <div class="comment-text">
+                    <span class="username">
+                        {{comment.user.name}}
+                        <i style="word-spacing: 20px;" class="fa fa-caret-right"></i>  
+                <span style="margin-left: 5px; margin-right: 5px;">{{comment.user.role | uppercase}}</span>
+                    <span class="text-muted pull-right">{{comment.updated}}</span>
+                    </span>
+                    <!-- /.username -->
+                    {{comment.text}}
+                </div>
+                <!-- /.comment-text -->
+            </div>
+            <!-- /.box-comment -->
+        </div>
+        <!-- /.box-footer -->
+        <div class="box-footer">
+            <div>
+                <img class="img-responsive img-circle img-sm" src="dist/img/avatar.png" alt="Alt Text">
+                <!-- .img-push is used to add margin to elements next to floating images -->
+                <div class="img-push">
+                    <input type="text" class="form-control input-sm"
+                           ng-keypress="($event.charCode==13)? postComment($event,news._id) : return"
+                           placeholder="Press enter to post comment">
+                </div>
+            </div>
+        </div>
+        <!-- /.box-footer -->
+    </div>
+    <div ui-view></div>
+</div>
+<!-- Upload Modal-->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">Select Files To Upload</h4>
+            </div>
+            <div class="modal-body">
+
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="Add Title">
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="Add Description">
+                </div>
+                <form action="/fileupload" class="dropzone">
+
+                </form>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary"> <span class="fa fa-upload" ng-click="upload(news._id, $index)"></span> Upload</button>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="bower_components/angular/angular.min.js"></script>
+<script src="bower_components/angular-ui-router/release/angular-ui-router.min.js"></script>
+<script src="bower_components/angular-messages/angular-messages.min.js"></script>
+<script src="app/app.js"></script>
+<script src="app/shared/controllers/ApplicationController.js"></script>
+<script src="app/components/home/homeController.js"></script>
+<script src="app/components/home/homeService.js"></script>
+<script src="app/components/timeline/timelineController.js"></script>
+<script src="app/components/profile/profileController.js"></script>
+<script src="app/components/partnersProfile/partnersProfileController.js"></script>
+<script src="app/components/login/LoginController.js"></script>
+<script src="app/components/login/AuthService.js"></script>
+<script src="app/shared/services/userService.js"></script>
+<script src="app/components/login/Session.js"></script>
+<script src="app/components/register/registerController.js"></script>
+<script src="app/components/register/registerService.js"></script>
+<script src="app/components/register/reportController.js"></script>
+<script src="app/components/register/reportService.js"></script>
+<script src="app/components/register/matchPassword.js"></script>
+<script src="app/shared/services/AuthResolver.js"></script>
+<script src="app/shared/services/ApplicationService.js"></script>
+<script src="app/components/profile/profileService.js"></script>
+<script src="app/components/login/loginDialog.js"></script>
+<script src="app/shared/filters/sectorFilter.js"></script>
+<script src="app/shared/filters/likesFilter.js"></script>
+<script src="app/components/sectors/sectorsController.js"></script>
+<script src="app/components/sectors/sectorServices.js"></script>
+<!-- jQuery 2.2.3 -->
+<script src="plugins/jQuery/jquery-2.2.3.min.js"></script>
+<!-- jQuery UI 1.11.4 -->
+<script src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
+<!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
+
+
+<script>
+    $.widget.bridge('uibutton', $.ui.button);
+</script>
+<!-- Bootstrap 3.3.6 -->
+<script src="bootstrap/js/bootstrap.min.js"></script>
+<!-- Morris.js charts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
+<script src="plugins/morris/morris.min.js"></script>
+<!--Dropzone-->
+<script src="dist/js/dropzone.js"></script>
+<!-- Sparkline -->
+<script src="plugins/sparkline/jquery.sparkline.min.js"></script>
+<!-- jvectormap -->
+<script src="plugins/jvectormap/jquery-jvectormap-1.2.2.min.js"></script>
+<script src="plugins/jvectormap/jquery-jvectormap-world-mill-en.js"></script>
+<!-- jQuery Knob Chart -->
+<script src="plugins/knob/jquery.knob.js"></script>
+<!-- daterangepicker -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.11.2/moment.min.js"></script>
+<script src="plugins/daterangepicker/daterangepicker.js"></script>
+<!-- datepicker -->
+<script src="plugins/datepicker/bootstrap-datepicker.js"></script>
+<!-- Bootstrap WYSIHTML5 -->
+<script src="plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.all.min.js"></script>
+<!-- Slimscroll -->
+<script src="plugins/slimScroll/jquery.slimscroll.min.js"></script>
+<!-- FastClick -->
+<script src="plugins/fastclick/fastclick.js"></script>
+<!-- AdminLTE App -->
+<script src="dist/js/app.min.js"></script>
+<!-- AdminLTE dashboard demo (This is only for demo purposes) -->
+<script src="dist/js/pages/dashboard.js"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="dist/js/demo.js"></script>
+

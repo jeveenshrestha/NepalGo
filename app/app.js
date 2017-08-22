@@ -46,7 +46,7 @@ constant('AUTH_EVENTS', {
             })
             .state('register', {
                 url: '/register',
-                templateUrl: 'app/components/register/register.html',
+                templateUrl: 'app/components/register/report.html',
                 controller: 'registerController'
                     // data: {
                     //     authorizedRoles: [USER_ROLES.user]
@@ -81,6 +81,11 @@ constant('AUTH_EVENTS', {
                 url: '/userProfile/:userId',
                 templateUrl: 'app/components/profile/userProfile.html',
                 controller: 'profileController'
+            })
+            .state('report', {
+                url: '/report',
+                templateUrl: 'app/components/report/report.html',
+                controller: 'reportController'
             });
     })
     .factory('AuthInterceptor', function($rootScope, $q, AUTH_EVENTS) {
